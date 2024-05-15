@@ -122,7 +122,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            validateUrls(); // 페이지 로드 시 유효성 검사 실행
+            loadUrls(); // 페이지 로드 시 URL 목록 로드
         });
 
         async function shortenUrl() {
@@ -140,7 +140,7 @@
             });
             const data = await response.json();
             const resultDiv = document.getElementById('result');
-            const shortUrl = `http://211.41.121.70:3000/${data.shortUrl}`;
+            const shortUrl = `https://url.goup.im/${data.shortUrl}`;
             saveUrl(url, shortUrl);
             addUrlToTable(url, shortUrl);
             document.getElementById('urlInput').value = ''; // 텍스트박스 내용 지우기
@@ -175,35 +175,6 @@
             tableBody.appendChild(row);
             const tableContainer = document.getElementById('tableContainer');
             tableContainer.style.display = 'block'; // URL이 추가되면 테이블 표시
-        }
-
-        async function validateUrls() {
-            let urls = JSON.parse(localStorage.getItem('urls')) || [];
-            let validUrls = [];
-            let invalidUrls = [];
-            for (let url of urls) {
-                try {
-                    const response = await fetch(url.shortUrl, { method: 'HEAD' });
-                    if (response.ok) {
-                        validUrls.push(url);
-                    } else {
-                        invalidUrls.push(url);
-                    }
-                } catch (error) {
-                    invalidUrls.push(url);
-                }
-            }
-
-            if (invalidUrls.length > 0) {
-                alert(`유효하지 않은 URL 주소 ${invalidUrls.length}개를 삭제했어요`);
-                invalidUrls.forEach(url => {
-                    console.log(`유효하지 않은 URL: ${url.shortUrl}`);
-                });
-                localStorage.setItem('urls', JSON.stringify(validUrls));
-                location.reload(); // 페이지 새로고침하여 테이블 갱신
-            } else {
-                loadUrls(); // 모든 URL이 유효하면 테이블 갱신
-            }
         }
     </script>
 </body>
