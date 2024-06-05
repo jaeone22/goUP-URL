@@ -119,63 +119,79 @@
         </div>
     </div>
     <div class="email">삭제 요청: goup-app@proton.me</div>
+    <div class="email">goUP URL 1.0.1</div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            loadUrls(); // 페이지 로드 시 URL 목록 로드
-        });
+    loadUrls(); // 페이지 로드 시 URL 목록 로드
+});
 
-        async function shortenUrl() {
-            const url = document.getElementById('urlInput').value;
-            if (!url) {
-                alert("URL 주소를 입력하세요");
-                return;
-            }
-            const response = await fetch('/shorten', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ url })
-            });
-            const data = await response.json();
-            const resultDiv = document.getElementById('result');
-            const shortUrl = `https://url.goup.im/${data.shortUrl}`;
-            saveUrl(url, shortUrl);
-            addUrlToTable(url, shortUrl);
-            document.getElementById('urlInput').value = ''; // 텍스트박스 내용 지우기
-        }
+async function shortenUrl() {
+    const url = document.getElementById('urlInput').value;
+    if (!isValidURL(url)) {
+        alert("유효한 URL 주소를 입력하세요");
+        return;
+    }
+    const response = await fetch('/shorten', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ url })
+    });
+    const data = await response.json();
+    if (data.errors) {
+        const errorMsg = data.errors.find(error => error.param === 'url').msg;
+        alert(errorMsg);
+        return;
+    }
+    const resultDiv = document.getElementById('result');
+    const shortUrl = `https://url.goup.im/${data.shortUrl}`;
+    saveUrl(url, shortUrl);
+    addUrlToTable(url, shortUrl);
+    document.getElementById('urlInput').value = ''; // 텍스트박스 내용 지우기
+}
 
-        function saveUrl(originalUrl, shortUrl) {
-            let urls = JSON.parse(localStorage.getItem('urls')) || [];
-            urls.push({ originalUrl, shortUrl });
-            localStorage.setItem('urls', JSON.stringify(urls));
-        }
+function isValidURL(url) {
+    const pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|'+ // domain name
+        '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+        '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+        '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+    return !!pattern.test(url);
+}
 
-        function loadUrls() {
-            const urls = JSON.parse(localStorage.getItem('urls')) || [];
-            const tableContainer = document.getElementById('tableContainer');
-            const tableBody = document.querySelector('#urlTable tbody');
-            tableBody.innerHTML = ''; // 테이블 초기화
-            if (urls.length > 0) {
-                tableContainer.style.display = 'block'; // URL이 있을 때만 테이블 표시
-                urls.forEach(url => addUrlToTable(url.originalUrl, url.shortUrl));
-            } else {
-                tableContainer.style.display = 'none'; // URL이 없을 때 테이블 숨기기
-            }
-        }
+function saveUrl(originalUrl, shortUrl) {
+    let urls = JSON.parse(localStorage.getItem('urls')) || [];
+    urls.push({ originalUrl, shortUrl });
+    localStorage.setItem('urls', JSON.stringify(urls));
+}
 
-        function addUrlToTable(originalUrl, shortUrl) {
-            const tableBody = document.querySelector('#urlTable tbody');
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><a href="${originalUrl}" target="_blank">${originalUrl}</a></td>
-                <td><a href="${shortUrl}" target="_blank">${shortUrl}</a></td>
-            `;
-            tableBody.appendChild(row);
-            const tableContainer = document.getElementById('tableContainer');
-            tableContainer.style.display = 'block'; // URL이 추가되면 테이블 표시
-        }
+function loadUrls() {
+    const urls = JSON.parse(localStorage.getItem('urls')) || [];
+    const tableContainer = document.getElementById('tableContainer');
+    const tableBody = document.querySelector('#urlTable tbody');
+    tableBody.innerHTML = ''; // 테이블 초기화
+    if (urls.length > 0) {
+        tableContainer.style.display = 'block'; // URL이 있을 때만 테이블 표시
+        urls.forEach(url => addUrlToTable(url.originalUrl, url.shortUrl));
+    } else {
+        tableContainer.style.display = 'none'; // URL이 없을 때 테이블 숨기기
+    }
+}
+
+function addUrlToTable(originalUrl, shortUrl) {
+    const tableBody = document.querySelector('#urlTable tbody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td><a href="${originalUrl}" target="_blank">${originalUrl}</a></td>
+        <td><a href="${shortUrl}" target="_blank">${shortUrl}</a></td>
+    `;
+    tableBody.appendChild(row);
+    const tableContainer = document.getElementById('tableContainer');
+    tableContainer.style.display = 'block'; // URL이 추가되면 테이블 표시
+}
     </script>
 </body>
 </html>

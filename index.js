@@ -2,6 +2,7 @@ const express = require('express');
 const shortid = require('shortid');
 const path = require('path');
 const redis = require('redis');
+const { body, validationResult } = require('express-validator');
 const app = express();
 const port = 3000;
 
@@ -28,7 +29,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // URL 단축 엔드포인트
-app.post('/shorten', async (req, res) => {
+app.post('/shorten', [
+    body('url').isURL().withMessage('유효한 URL을 입력하세요'),
+    body('url').matches(/^[a-zA-Z0-9\-._~:/?#@!$&'()*+,;=]*$/).withMessage('XSS Cross-site Scripting 취약점은 이미 막혔어요!')
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
     const originalUrl = req.body.url;
     const shortUrl = shortid.generate();
     await client.set(`url:${shortUrl}`, originalUrl); // URL 데이터를 Redis에 저장
