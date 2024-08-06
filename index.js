@@ -44,14 +44,15 @@ app.post('/shorten', [
     res.send({ shortUrl });
 });
 
-// 단축 URL 리디렉션 엔드포인트
 app.get('/:shortUrl', async (req, res) => {
     const shortUrl = req.params.shortUrl;
     const originalUrl = await client.get(`url:${shortUrl}`); // Redis에서 URL 데이터 가져오기
     if (originalUrl) {
-        res.redirect(originalUrl);
+        // originalUrl이 http 또는 https로 시작하지 않으면 추가
+        const finalUrl = originalUrl.startsWith('http') ? originalUrl : `https://${originalUrl}`;
+        res.redirect(finalUrl); // 중간 URL 없이 바로 리디렉션
     } else {
-        res.status(404).send('URL 주소를 찾을 수 없어요');
+        res.status(404).send('URL 주소를 찾을 수 없어요<br>이 주소를 보내준 사람에게 새로운 주소를 요청해주세요');
     }
 });
 

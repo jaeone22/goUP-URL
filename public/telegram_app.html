@@ -123,7 +123,9 @@
         </div>
     </div>
     <div class="email">삭제 요청: goup@goup.im</div>
-    <div class="email">goUP URL 1.1</div>
+    <div class="email">goUP URL for Telegram 1.0</div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -154,6 +156,7 @@
             saveUrl(url, shortUrl);
             addUrlToTable(url, shortUrl);
             document.getElementById('urlInput').value = ''; // 텍스트박스 내용 지우기
+            notificationOccurred(success)
         }
 
         function isValidURL(url) {
