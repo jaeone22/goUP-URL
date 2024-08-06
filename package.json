@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "express": "^4.19.2",
+    "express-validator": "^7.1.0",
+    "redis": "^4.7.0",
+    "shortid": "^2.2.16"
+  }
+}
