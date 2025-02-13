@@ -16,12 +16,26 @@ const redisPassword = process.env.REDIS_PASSWORD; // Redis 비밀번호
 
 const client = redis.createClient({
     url: `redis://${redisHost}:${redisPort}`,
-    password: redisPassword
+    password: redisPassword,
+    socket: {
+        connectTimeout: 10000, // 연결 타임아웃을 10초로 설정
+    }
 });
 
-(async () => {
-    await client.connect();
-})();
+const connectWithRetry = async () => {
+    while (true) {
+        try {
+            await client.connect();
+            console.log('Redis client connected');
+            break; // 연결 성공 시 루프 종료
+        } catch (error) {
+            console.error('Redis connection error, retrying in 5 seconds:', error);
+            await new Promise(resolve => setTimeout(resolve, 5000)); // 5초 후 재시도
+        }
+    }
+};
+
+connectWithRetry(); // Redis 연결 시도
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -41,21 +55,29 @@ app.post('/shorten', [
         return res.status(400); // 에러 메시지를 JSON 형식으로 반환
     }
 
-    const originalUrl = req.body.url;
-    const shortUrl = shortid.generate();
-    await client.set(`url:${shortUrl}`, originalUrl); // URL 데이터를 Redis에 저장
-    res.send({ shortUrl }); // 단축된 URL을 JSON 형식으로 반환
+    try {
+        const originalUrl = req.body.url;
+        const shortUrl = shortid.generate();
+        await client.set(`url:${shortUrl}`, originalUrl); // URL 데이터를 Redis에 저장
+        res.send({ shortUrl }); // 단축된 URL을 JSON 형식으로 반환
+    } catch {
+        res.status(500).send();
+    }
 });
 
 app.get('/:shortUrl', async (req, res) => {
     const shortUrl = req.params.shortUrl;
-    const originalUrl = await client.get(`url:${shortUrl}`); // Redis에서 URL 데이터 가져오기
-    if (originalUrl) {
-        // originalUrl이 http 또는 https로 시작하지 않으면 추가
-        const finalUrl = originalUrl.startsWith('http') ? originalUrl : `https://${originalUrl}`;
-        res.redirect(finalUrl);
-    } else {
-        res.status(404);
+    try {
+        const originalUrl = await client.get(`url:${shortUrl}`); // Redis에서 URL 데이터 가져오기
+        if (originalUrl) {
+            // originalUrl이 http 또는 https로 시작하지 않으면 추가
+            const finalUrl = originalUrl.startsWith('http') ? originalUrl : `https://${originalUrl}`;
+            res.redirect(finalUrl);
+        } else {
+            res.status(404);
+        }
+    } catch {
+        res.status(500).send();
     }
 });
 
