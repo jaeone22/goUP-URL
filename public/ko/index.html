@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>goUP URL</title>
-    <meta name='description' content='100% free URL shorter without login'>
+    <meta name='description' content='100% 무료 로그인이 필요없는 URL 단축기'>
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -18,8 +18,8 @@
             <div class="bar"></div>
           </div>
           <ul id="menu">
-            <li><a href="https://goup.im/">goUP</a></li>
-            <select_items><li><a href="/index.html">URL</a></li></select_items>
+            <li><a href="https://goup.im/ko">goUP</a></li>
+            <select_items><li><a href="/ko/index.html">URL</a></li></select_items>
             <li><a href="https://id.goup.im">ID</a></li>
             <li><a href="https://ai.goup.im">AI</a></li>
           </ul>
@@ -29,8 +29,8 @@
     <h2>goUP URL</h2>
     <div class="container">
         <div class="input-container">
-            <input type="text" id="urlInput" placeholder="Enter the URL address to be shortened">
-            <button onclick="shortenUrl()">Shortening</button>
+            <input type="text" id="urlInput" placeholder="단축할 URL 주소를 입력하세요">
+            <button onclick="shortenUrl()">단축</button>
         </div>
         <div id="result"></div>
         <div class="table-container" id="tableContainer">
@@ -38,17 +38,17 @@
                 <thead>
                     <tr>
                         <!--<th>원본 URL</th>-->
-                        <th>Shortened URL</th>
+                        <th>단축된 URL</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Shortened URLs will be inserted here -->
+                    <!-- 단축된 URL이 여기에 삽입됩니다 -->
                 </tbody>
             </table>
         </div>
     </div>
-    <div class="email">Contect: goup@goup.im</div>
-    <div class="email">goUP URL 2.0 - English Page</div>
+    <div class="email">문의: goup@goup.im</div>
+    <div class="email">goUP URL 2.0 - 한국어 페이지</div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -58,7 +58,7 @@
         async function shortenUrl() {
             const url = document.getElementById('urlInput').value;
             if (!isValidURL(url)) {
-                alert("Please enter a valid URL.");
+                alert("유효한 URL을 입력하세요.");
                 return;
             }
             const response = await fetch('/shorten', {
@@ -70,7 +70,7 @@
             });
             
             if (!response.ok) {
-                alert("Please enter a valid URL.");
+                alert("유효한 URL을 입력하세요.");
                 return;
             }
 
@@ -83,12 +83,12 @@
         }
 
         function isValidURL(url) {
-            const pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
-                '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|'+ // domain name
-                '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
-                '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
-                '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
-                '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+            const pattern = new RegExp('^(https?:\\/\\/)?'+ // 프로토콜
+                '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|'+ // 도메인 이름
+                '((\\d{1,3}\\.){3}\\d{1,3}))'+ // 또는 IP (v4) 주소
+                '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // 포트와 경로
+                '(\\?[;&a-z\\d%_.~+=-]*)?'+ // 쿼리 문자열
+                '(\\#[-a-z\\d_]*)?$','i'); // 프래그먼트 로케이터
             return !!pattern.test(url);
         }
 
