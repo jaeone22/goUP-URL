@@ -6,19 +6,18 @@ const { body, validationResult } = require('express-validator');
 const app = express();
 const port = 3000;
 
-// dotenv 패키지 추가
 require('dotenv').config();
 
-// Redis 클라이언트 설정 (환경 변수 사용)
-const redisHost = process.env.REDIS_HOST; // Redis 호스트 주소
-const redisPort = process.env.REDIS_PORT; // Redis 포트
-const redisPassword = process.env.REDIS_PASSWORD; // Redis 비밀번호
+// Redis 클라이언트
+const redisHost = process.env.REDIS_HOST;
+const redisPort = process.env.REDIS_PORT; 
+const redisPassword = process.env.REDIS_PASSWORD; 
 
 const client = redis.createClient({
     url: `redis://${redisHost}:${redisPort}`,
     password: redisPassword,
     socket: {
-        connectTimeout: 10000, // 연결 타임아웃을 10초로 설정
+        connectTimeout: 10000, // 연결 타임아웃 10초
     }
 });
 
@@ -27,7 +26,7 @@ const connectWithRetry = async () => {
         try {
             await client.connect();
             console.log('Redis client connected');
-            break; // 연결 성공 시 루프 종료
+            break;
         } catch (error) {
             console.error('Redis connection error, retrying in 5 seconds:', error);
             await new Promise(resolve => setTimeout(resolve, 5000)); // 5초 후 재시도
@@ -35,24 +34,22 @@ const connectWithRetry = async () => {
     }
 };
 
-connectWithRetry(); // Redis 연결 시도
+connectWithRetry();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 언어에 따라 정적 파일 제공 경로 설정
 app.use((req, res, next) => {
     express.static(path.join(__dirname, 'public'))(req, res, next);
 });
 
 // URL 단축 엔드포인트
 app.post('/shorten', [
-    body('url').isURL(),
-    body('url').matches(/^[a-zA-Z0-9\-._~:/?#@!$&'()*+,;=]*$/)
+    body('url').isURL()
 ], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400); // 에러 메시지를 JSON 형식으로 반환
+        return res.status(400);
     }
 
     try {
@@ -70,7 +67,6 @@ app.get('/:shortUrl', async (req, res) => {
     try {
         const originalUrl = await client.get(`url:${shortUrl}`); // Redis에서 URL 데이터 가져오기
         if (originalUrl) {
-            // originalUrl이 http 또는 https로 시작하지 않으면 추가
             const finalUrl = originalUrl.startsWith('http') ? originalUrl : `https://${originalUrl}`;
             res.redirect(finalUrl);
         } else {
